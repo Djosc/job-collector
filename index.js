@@ -3,6 +3,8 @@ import cheerio from 'cheerio';
 import express from 'express';
 import puppeteer from 'puppeteer';
 
+import { scrapeAndPush } from './src/scrape.js';
+
 const PORT = process.env.PORT || 3000;
 
 // Will eventually add an input for users(me) to use custom query parameters
@@ -13,36 +15,34 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const jobData = [];
+// const scrapeAndPush = async (url, arrIndex) => {
+// 	url = 'https://www.indeed.com' + url;
+// 	axios(url).then((res) => {
+// 		const htmlData = res.data;
+// 		const $ = cheerio.load(htmlData);
 
-const scrapeAndPush = async (url, arrIndex) => {
-	url = 'https://www.indeed.com' + url;
-	axios(url).then((res) => {
-		const htmlData = res.data;
-		const $ = cheerio.load(htmlData);
-
-		$('.jobsearch-ViewJobLayout-jobDisplay', htmlData).each((index, element) => {
-			const title = $(element)
-				.find('.jobsearch-JobInfoHeader-title-container > h1')
-				.text();
-			const company = $(element)
-				.find('.jobsearch-CompanyInfoContainer')
-				.find('a')
-				.first()
-				.text();
-			const location = $(element).find('.jobsearch-jobLocationHeader-location').text();
-			jobData.push({
-				arrIndex,
-				title,
-				company,
-				location,
-			});
-			console.log(title);
-			console.log(company);
-			console.log(location);
-		});
-	});
-};
+// 		$('.jobsearch-ViewJobLayout-jobDisplay', htmlData).each((index, element) => {
+// 			const title = $(element)
+// 				.find('.jobsearch-JobInfoHeader-title-container > h1')
+// 				.text();
+// 			const company = $(element)
+// 				.find('.jobsearch-CompanyInfoContainer')
+// 				.find('a')
+// 				.first()
+// 				.text();
+// 			const location = $(element).find('.jobsearch-jobLocationHeader-location').text();
+// 			jobData.push({
+// 				arrIndex,
+// 				title,
+// 				company,
+// 				location,
+// 			});
+// 			console.log(title);
+// 			console.log(company);
+// 			console.log(location + '\n');
+// 		});
+// 	});
+// };
 
 // This will be contained within an api endpoint
 // This retrieves the url of the full job description, then sends it to the scraping function.
@@ -57,7 +57,6 @@ axios(URL)
 			scrapeAndPush(linkToFullJob, index);
 		});
 	})
-	.then(console.log(jobData))
 	.catch((err) => console.log(err));
 
 app.listen(PORT, () => console.log('App is listening on port: ' + PORT));
