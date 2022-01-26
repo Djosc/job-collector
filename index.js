@@ -1,9 +1,11 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import express from 'express';
+import res from 'express/lib/response.js';
 import puppeteer from 'puppeteer';
 
 import { scrapeAndPush } from './src/scrape.js';
+import { jobData } from './src/scrape.js';
 
 const PORT = process.env.PORT || 3000;
 
@@ -15,48 +17,25 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// const scrapeAndPush = async (url, arrIndex) => {
-// 	url = 'https://www.indeed.com' + url;
-// 	axios(url).then((res) => {
-// 		const htmlData = res.data;
-// 		const $ = cheerio.load(htmlData);
-
-// 		$('.jobsearch-ViewJobLayout-jobDisplay', htmlData).each((index, element) => {
-// 			const title = $(element)
-// 				.find('.jobsearch-JobInfoHeader-title-container > h1')
-// 				.text();
-// 			const company = $(element)
-// 				.find('.jobsearch-CompanyInfoContainer')
-// 				.find('a')
-// 				.first()
-// 				.text();
-// 			const location = $(element).find('.jobsearch-jobLocationHeader-location').text();
-// 			jobData.push({
-// 				arrIndex,
-// 				title,
-// 				company,
-// 				location,
-// 			});
-// 			console.log(title);
-// 			console.log(company);
-// 			console.log(location + '\n');
-// 		});
-// 	});
-// };
-
-// This will be contained within an api endpoint
 // This retrieves the url of the full job description, then sends it to the scraping function.
-axios(URL)
-	.then((res) => {
-		const htmlData = res.data;
-		const $ = cheerio.load(htmlData);
+app.get('/jobs', (req, res) => {
+	axios(URL)
+		.then((response) => {
+			const htmlData = response.data;
+			const $ = cheerio.load(htmlData);
 
-		$('#mosaic-provider-jobcards > a', htmlData).each((index, element) => {
-			const linkToFullJob = $(element).attr('href');
-			// console.log(linkToFullJob);
-			scrapeAndPush(linkToFullJob, index);
+			$('#mosaic-provider-jobcards > a', htmlData).each((index, element) => {
+				const linkToFullJob = $(element).attr('href');
+				scrapeAndPush(linkToFullJob, index);
+			});
+		})
+		.then(() => {
+			setTimeout(() => res.status(200).json(jobData), 4000);
+		})
+		.catch((err) => {
+			console.log(err);
+			res.status(500).send('Error: ' + err);
 		});
-	})
-	.catch((err) => console.log(err));
+});
 
 app.listen(PORT, () => console.log('App is listening on port: ' + PORT));
