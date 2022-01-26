@@ -4,6 +4,7 @@ import express from 'express';
 
 const PORT = process.env.PORT || 3000;
 
+// Will eventually add an input for users(me) to use custom query parameters
 const URL =
 	'https://www.indeed.com/jobs?q=Web%20Developer&l=Dayton%2C%20OH&rqf=1&vjk=8e4cedd921cd6b58';
 
