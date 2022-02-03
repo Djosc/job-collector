@@ -27,7 +27,8 @@ export const scrapeIndeed = async (queryParams) => {
 						const title = $(element).find('.jobTitle > span').text().trim();
 						const company = $(element).find('.companyName').text().trim();
 						const location = $(element).find('.companyLocation').text().trim();
-						const tags = $(element).find('.attribute_snippet').text();
+						const tags = $(element).find('.attribute_snippet').text().trim();
+						const postDate = $(element).find('.date').text().trim();
 						const description = $(element).find('.job-snippet > ul').text().trim();
 						const linkToFullJob = $(element).attr('href');
 
@@ -37,19 +38,29 @@ export const scrapeIndeed = async (queryParams) => {
 								company: company,
 								location: location,
 								tags: tags,
+								postDate: postDate,
 								description: description,
 								linkToFullJob: 'https://indeed.com' + linkToFullJob,
 							});
 						}
 					});
-					return jobs;
 				})
 				.catch((err) => console.error(err))
 		);
 	}
 
-	// Run the axios calls from the promises array.
-	// This resolves to a single promise containing the job data, which is returned to the endpoint,
-	// Then the data is sent in a json response.
-	return Promise.all(promises);
+	/**
+	 * Run all of the promises in the promise array, Then return a promise with the job data
+	 * back to the endpoint to be sent in a json response
+	 */
+	await Promise.all(promises);
+
+	return new Promise((resolve, reject) => {
+		resolve(jobs);
+	});
+
+	// setTimeout(() => {
+	// 	Promise.all(promises);
+
+	// }, 3000)
 };
