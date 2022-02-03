@@ -28,7 +28,7 @@ app.get('/indeedJobs', async (req, res) => {
 
 	scrapeIndeed(queryParams)
 		.then((data) => {
-			console.log(data.length);
+			data = data.slice(-1);
 			setTimeout(() => res.status(200).json(data), 5000);
 		})
 		.catch((err) => res.status(500));

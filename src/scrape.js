@@ -27,7 +27,7 @@ export const scrapeIndeed = async (queryParams) => {
 						const title = $(element).find('.jobTitle > span').text().trim();
 						const company = $(element).find('.companyName').text().trim();
 						const location = $(element).find('.companyLocation').text().trim();
-						const tags = $(element).find('.attribute_snippet').text().trim();
+						const tags = $(element).find('.attribute_snippet').text();
 						const description = $(element).find('.job-snippet > ul').text().trim();
 						const linkToFullJob = $(element).attr('href');
 
