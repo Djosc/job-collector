@@ -21,10 +21,14 @@ app.use(express.urlencoded({ extended: true }));
 // Get Indeed Job Data and Links
 app.get('/indeedJobs', async (req, res) => {
 	const queryParams = {
-		jobQuery: 'Web Developer',
-		cityQuery: 'Dayton, OH',
-		numberOfPages: 10,
+		jobQuery: req.query.job || 'Web Developer',
+		cityQuery: req.query.city || 'Dayton, OH',
+		radius: req.query.radius || '25',
+		sort: req.query.sort || 'relevance',
+		numberOfPages: req.query.pages * 10 - 10 || 0,
 	};
+
+	console.log(queryParams.numberOfPages);
 
 	scrapeIndeed(queryParams)
 		.then((data) => {

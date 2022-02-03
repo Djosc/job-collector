@@ -3,12 +3,14 @@ import cheerio from 'cheerio';
 
 export const scrapeIndeed = async (queryParams) => {
 	const indeedURL = 'https://www.indeed.com/';
-	const { jobQuery, cityQuery, numberOfPages } = queryParams;
+	const { jobQuery, cityQuery, radius, sort, numberOfPages } = queryParams;
 
 	// Combine the query strings and encode the Url
 	let queryURL = indeedURL + 'jobs';
 	queryURL += '?q=' + jobQuery;
 	queryURL += '&l=' + cityQuery;
+	queryURL += '&radius=' + radius;
+	queryURL += '&sort=' + sort;
 
 	const qURLEncoded = encodeURI(queryURL);
 
@@ -23,6 +25,7 @@ export const scrapeIndeed = async (queryParams) => {
 					const htmlData = response.data;
 					const $ = cheerio.load(htmlData);
 
+					// Scrape data from the job cards and push new job objects to the jobs array
 					$('#mosaic-provider-jobcards > a', htmlData).each((index, element) => {
 						const title = $(element).find('.jobTitle > span').text().trim();
 						const company = $(element).find('.companyName').text().trim();
