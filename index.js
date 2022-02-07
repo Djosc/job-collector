@@ -1,12 +1,12 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import express from 'express';
-import puppeteer from 'puppeteer';
+import cors from 'cors';
 
 import { scrapeIndeed } from './src/scrape.js';
 // import { jobData } from './src/scrape.js';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Will eventually add an input for users(me) to use custom query parameters
 var indeedURL = 'https://www.indeed.com/jobs?q=Web%20Developer&l=Dayton%2C%20OH';
@@ -17,6 +17,8 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors());
 
 // Get Indeed Job Data and Links
 app.get('/indeedJobs', async (req, res) => {
@@ -33,7 +35,9 @@ app.get('/indeedJobs', async (req, res) => {
 	scrapeIndeed(queryParams)
 		.then((data) => {
 			console.log(data.length);
-			setTimeout(() => res.status(200).json(data), 2000);
+			setTimeout(() => {
+				res.status(200).json(data);
+			}, 2000);
 		})
 		.catch((err) => res.status(500));
 });
