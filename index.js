@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 
 import { scrapeIndeed } from './src/scrape.js';
+import { filterIndeed } from './src/filter.js';
 // import { jobData } from './src/scrape.js';
 
 const PORT = process.env.PORT || 8080;
@@ -30,6 +31,8 @@ app.get('/indeedJobs', async (req, res) => {
 		numberOfPages: req.query.pages * 10 - 10 || 0,
 	};
 
+	// var jobLinksArr = [];
+
 	console.log(queryParams.numberOfPages);
 
 	scrapeIndeed(queryParams)
@@ -40,6 +43,22 @@ app.get('/indeedJobs', async (req, res) => {
 			}, 2000);
 		})
 		.catch((err) => res.status(500));
+
+	// ! code block with function to filter indeed TODO
+	// scrapeIndeed(queryParams)
+	// 	.then((data) => {
+	// 		console.log(data.length);
+	// 		// console.log(data);
+	// 		setTimeout(() => {
+	// 			data.forEach((el) => {
+	// 				jobLinksArr.push(el.linkToFullJob);
+	// 			});
+	// 			// res.status(200).json(jobLinksArr);
+	// 		}, 2000);
+	// 	}).then(() => {
+
+	// 	})
+	// 	.catch((err) => res.status(500));
 });
 
 //Get GlassDoor Job Data and Links
