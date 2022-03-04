@@ -3,6 +3,10 @@ import cheerio from 'cheerio';
 import express from 'express';
 import cors from 'cors';
 
+import { join, dirname } from 'path';
+import { Low, JSONFile } from 'lowdb';
+import { fileURLToPath } from 'url';
+
 import { scrapeIndeed } from './src/scrape.js';
 import { filterIndeed } from './src/filter.js';
 // import { jobData } from './src/scrape.js';
@@ -20,6 +24,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
+
+// lowDB setup
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const file = join(__dirname, '/src/data/db.json');
+const adapter = new JSONFile(file);
+const db = new Low(adapter);
+
+await db.read();
+
+// console.log(db.data);
+
+db.data ||= { jobs: [] };
+
+const { jobs } = db.data;
+// jobs.push('test');
+
+// await db.write();
 
 // Get Indeed Job Data and Links
 app.get('/indeedJobs', async (req, res) => {
@@ -59,6 +81,31 @@ app.get('/indeedJobs', async (req, res) => {
 
 	// 	})
 	// 	.catch((err) => res.status(500));
+});
+
+// Returns the whole watch list(object containing array of objects) as JSON
+app.get('/watchList', async (req, res) => {
+	await db.read();
+	console.log(db.data);
+
+	res.status(200).json(db.data);
+});
+
+app.post('/addJob', async (req, res) => {
+	await db.read();
+	const { jobs } = db.data;
+
+	const job = jobs.filter((j) => j.description.includes(req.body.description));
+
+	if (job.length > 0) {
+		res.status(200).send('Entry already exists');
+	} else {
+		db.data.jobs.push({
+			...req.body,
+		});
+		db.write();
+		res.status(201).send('Entry added successfully');
+	}
 });
 
 //Get GlassDoor Job Data and Links
