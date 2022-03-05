@@ -3,13 +3,17 @@ import cheerio from 'cheerio';
 import express from 'express';
 import cors from 'cors';
 
+import { join, dirname } from 'path';
+import { Low, JSONFile } from 'lowdb';
+import { fileURLToPath } from 'url';
+
 import { scrapeIndeed } from './src/scrape.js';
+import { filterIndeed } from './src/filter.js';
 // import { jobData } from './src/scrape.js';
 
 const PORT = process.env.PORT || 8080;
 
 // Will eventually add an input for users(me) to use custom query parameters
-var indeedURL = 'https://www.indeed.com/jobs?q=Web%20Developer&l=Dayton%2C%20OH';
 var glassdoorURL =
 	'https://www.glassdoor.com/Job/springboro-oh-web-developer-jobs-SRCH_IL.0,13_IC1145756_KO14,27.htm?clickSource=searchBox';
 
@@ -19,6 +23,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
+
+// lowDB setup
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const file = join(__dirname, '/src/data/db.json');
+const adapter = new JSONFile(file);
+const db = new Low(adapter);
+
+await db.read();
+
+// console.log(db.data);
+
+db.data ||= { jobs: [] };
+
+const { jobs } = db.data;
+// jobs.push('test');
+
+// await db.write();
 
 // Get Indeed Job Data and Links
 app.get('/indeedJobs', async (req, res) => {
@@ -40,6 +62,71 @@ app.get('/indeedJobs', async (req, res) => {
 			}, 2000);
 		})
 		.catch((err) => res.status(500));
+
+	// var jobLinksArr = [];
+
+	// ! code block with function to filter indeed TODO
+	// scrapeIndeed(queryParams)
+	// 	.then((data) => {
+	// 		console.log(data.length);
+	// 		// console.log(data);
+	// 		setTimeout(() => {
+	// 			data.forEach((el) => {
+	// 				jobLinksArr.push(el.linkToFullJob);
+	// 			});
+	// 			// res.status(200).json(jobLinksArr);
+	// 		}, 2000);
+	// 	}).then(() => {
+
+	// 	})
+	// 	.catch((err) => res.status(500));
+});
+
+// Returns the whole watch list(object containing array of objects) as JSON
+app.get('/watchList', async (req, res) => {
+	await db.read();
+	// console.log(db.data);
+
+	res.status(200).json(db.data);
+});
+
+// Adds a single job the the JSON db file
+// If the entry exists already, return string saying so. Otherwise, push the request body to DB
+app.post('/addJob', async (req, res) => {
+	await db.read();
+	const { jobs } = db.data;
+
+	const job = jobs.filter((j) => j.description.includes(req.body.description));
+
+	if (job.length > 0) {
+		res.status(200).send('Entry already exists');
+	} else {
+		db.data.jobs.push({
+			...req.body,
+		});
+		db.write();
+		res.status(201).send('Entry added successfully');
+	}
+});
+
+// ! slight asynchronous fishiness here when an entry does not exist
+// find and delete entry if the req.body exists in the db
+app.delete('/removeJob', async (req, res) => {
+	await db.read();
+	const { jobs } = db.data;
+
+	try {
+		for (const [idx, job] of jobs.entries()) {
+			if (job.description.includes(req.body.description)) {
+				jobs.splice(idx, 1);
+				await db.write();
+				res.status(200).send('Entry successfully removed');
+			}
+		}
+		res.send('Entry does not exist');
+	} catch {
+		// res.send('Entry does not exist');
+	}
 });
 
 //Get GlassDoor Job Data and Links
