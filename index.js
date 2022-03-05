@@ -14,7 +14,6 @@ import { filterIndeed } from './src/filter.js';
 const PORT = process.env.PORT || 8080;
 
 // Will eventually add an input for users(me) to use custom query parameters
-var indeedURL = 'https://www.indeed.com/jobs?q=Web%20Developer&l=Dayton%2C%20OH';
 var glassdoorURL =
 	'https://www.glassdoor.com/Job/springboro-oh-web-developer-jobs-SRCH_IL.0,13_IC1145756_KO14,27.htm?clickSource=searchBox';
 
@@ -53,8 +52,6 @@ app.get('/indeedJobs', async (req, res) => {
 		numberOfPages: req.query.pages * 10 - 10 || 0,
 	};
 
-	// var jobLinksArr = [];
-
 	console.log(queryParams.numberOfPages);
 
 	scrapeIndeed(queryParams)
@@ -65,6 +62,8 @@ app.get('/indeedJobs', async (req, res) => {
 			}, 2000);
 		})
 		.catch((err) => res.status(500));
+
+	// var jobLinksArr = [];
 
 	// ! code block with function to filter indeed TODO
 	// scrapeIndeed(queryParams)
@@ -86,11 +85,13 @@ app.get('/indeedJobs', async (req, res) => {
 // Returns the whole watch list(object containing array of objects) as JSON
 app.get('/watchList', async (req, res) => {
 	await db.read();
-	console.log(db.data);
+	// console.log(db.data);
 
 	res.status(200).json(db.data);
 });
 
+// Adds a single job the the JSON db file
+// If the entry exists already, return string saying so. Otherwise, push the request body to DB
 app.post('/addJob', async (req, res) => {
 	await db.read();
 	const { jobs } = db.data;
@@ -105,6 +106,26 @@ app.post('/addJob', async (req, res) => {
 		});
 		db.write();
 		res.status(201).send('Entry added successfully');
+	}
+});
+
+// ! slight asynchronous fishiness here when an entry does not exist
+// find and delete entry if the req.body exists in the db
+app.delete('/removeJob', async (req, res) => {
+	await db.read();
+	const { jobs } = db.data;
+
+	try {
+		for (const [idx, job] of jobs.entries()) {
+			if (job.description.includes(req.body.description)) {
+				jobs.splice(idx, 1);
+				await db.write();
+				res.status(200).send('Entry successfully removed');
+			}
+		}
+		res.send('Entry does not exist');
+	} catch {
+		// res.send('Entry does not exist');
 	}
 });
 
