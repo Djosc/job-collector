@@ -129,6 +129,50 @@ app.delete('/removeJob', async (req, res) => {
 	}
 });
 
+app.put('/markApplied', async (req, res) => {
+	await db.read();
+	const { jobs } = db.data;
+
+	try {
+		for (const job of jobs) {
+			if (job.description.includes(req.body.description)) {
+				if (req.body.applied === true) {
+					res.status(200).send('Entry already marked as applied');
+				} else {
+					job.applied = true;
+					await db.write();
+					res.status(200).send('Entry successfully marked as applied');
+				}
+			}
+		}
+		res.send('Entry does not exist');
+	} catch {
+		// res.send('Entry does not exist');
+	}
+});
+
+app.put('/unmarkApplied', async (req, res) => {
+	await db.read();
+	const { jobs } = db.data;
+
+	try {
+		for (const job of jobs) {
+			if (job.description.includes(req.body.description)) {
+				if (req.body.applied === false) {
+					res.status(200).send('Entry already unmarked');
+				} else {
+					job.applied = false;
+					await db.write();
+					res.status(200).send('Entry successfully unmarked as applied');
+				}
+			}
+		}
+		res.send('Entry does not exist');
+	} catch {
+		// res.send('Entry does not exist');
+	}
+});
+
 //Get GlassDoor Job Data and Links
 app.get('/glassdoorJobs', (req, res) => {
 	const promises = [];
