@@ -57,6 +57,7 @@ app.get('/indeedJobs', async (req, res) => {
 			}, 2000);
 		})
 		.catch((err) => res.status(500));
+});
 
 // Returns the whole watch list(object containing array of objects) as JSON
 app.get('/watchList', async (req, res) => {
