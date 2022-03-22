@@ -33,14 +33,9 @@ const db = new Low(adapter);
 
 await db.read();
 
-// console.log(db.data);
-
 db.data ||= { jobs: [] };
 
 const { jobs } = db.data;
-// jobs.push('test');
-
-// await db.write();
 
 // Get Indeed Job Data and Links
 app.get('/indeedJobs', async (req, res) => {
@@ -62,25 +57,6 @@ app.get('/indeedJobs', async (req, res) => {
 			}, 2000);
 		})
 		.catch((err) => res.status(500));
-
-	// var jobLinksArr = [];
-
-	// ! code block with function to filter indeed TODO
-	// scrapeIndeed(queryParams)
-	// 	.then((data) => {
-	// 		console.log(data.length);
-	// 		// console.log(data);
-	// 		setTimeout(() => {
-	// 			data.forEach((el) => {
-	// 				jobLinksArr.push(el.linkToFullJob);
-	// 			});
-	// 			// res.status(200).json(jobLinksArr);
-	// 		}, 2000);
-	// 	}).then(() => {
-
-	// 	})
-	// 	.catch((err) => res.status(500));
-});
 
 // Returns the whole watch list(object containing array of objects) as JSON
 app.get('/watchList', async (req, res) => {

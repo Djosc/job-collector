@@ -61,9 +61,4 @@ export const scrapeIndeed = async (queryParams) => {
 	return new Promise((resolve, reject) => {
 		resolve(jobs);
 	});
-
-	// setTimeout(() => {
-	// 	Promise.all(promises);
-
-	// }, 3000)
 };
