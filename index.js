@@ -1,5 +1,3 @@
-import axios from 'axios';
-import cheerio from 'cheerio';
 import express from 'express';
 import cors from 'cors';
 
@@ -8,14 +6,8 @@ import { Low, JSONFile } from 'lowdb';
 import { fileURLToPath } from 'url';
 
 import { scrapeIndeed } from './src/scrape.js';
-import { filterIndeed } from './src/filter.js';
-// import { jobData } from './src/scrape.js';
 
 const PORT = process.env.PORT || 8080;
-
-// Will eventually add an input for users(me) to use custom query parameters
-var glassdoorURL =
-	'https://www.glassdoor.com/Job/springboro-oh-web-developer-jobs-SRCH_IL.0,13_IC1145756_KO14,27.htm?clickSource=searchBox';
 
 const app = express();
 
@@ -148,56 +140,6 @@ app.put('/unmarkApplied', async (req, res) => {
 	} catch {
 		// res.send('Entry does not exist');
 	}
-});
-
-//Get GlassDoor Job Data and Links
-app.get('/glassdoorJobs', (req, res) => {
-	const promises = [];
-	const jobs = [];
-
-	// for (let i = 0; i <= 2; i++) {
-	promises.push(
-		axios({ method: 'get', url: `${glassdoorURL}` })
-			.then((response) => {
-				const htmlData = response.data;
-				const $ = cheerio.load(htmlData);
-
-				$('.react-job-listing', htmlData).each((index, element) => {
-					const title = $(element).find('a[data-test="job-link"]').first().text().trim();
-					// fix company
-					const company = $(element).find('a > span').first().text().trim();
-					// const company = $(element).find('.').text().trim();
-					// const location = $(element).find('.').text().trim();
-					// const pay = $(element).find('.').text().trim();
-					const linkToFullJob = $(element).find('a').attr('href');
-
-					// const encodedLink = encodeURIComponent(linkToFullJob);
-
-					// if (company !== 'Revature') {
-					jobs.push({
-						title: title,
-						company: company,
-						// location: location,
-						// pay: pay,
-						// description: description,
-						linkToFullJob: 'https://glassdoor.com' + linkToFullJob,
-					});
-					// }
-				});
-			})
-			.catch((err) => console.error(err))
-	);
-	// }
-
-	Promise.all(promises)
-		.then(() => {
-			console.log(jobs);
-			console.log(jobs.length);
-
-			// Allow jobs array to populate, then return
-			setTimeout(() => res.status(200).json(jobs), 5000);
-		})
-		.catch((err) => console.error(err));
 });
 
 app.listen(PORT, () => console.log('App is listening on port: ' + PORT));
